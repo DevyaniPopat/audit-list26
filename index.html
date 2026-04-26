@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gandhi Arun & Co — Audit Tracker FY 2025-26</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1F3C;--blue:#1565C0;--blue-lt:#E3F0FF;--slate:#455A64;
+  --green:#2E7D32;--green-bg:#E8F5E9;--amber:#F57F17;--amber-bg:#FFF8E1;
+  --red:#C62828;--red-bg:#FFEBEE;--orange:#BF360C;
+  --grey:#546E7A;--grey-bg:#ECEFF1;--white:#FFFFFF;--bg:#F0F3F8;
+  --border:#DDE3ED;--blocked:#232323;--text:#1A2332;--text2:#5A6A7A;
+  --sw:224px;--sw-collapsed:48px;--hh:52px;
+  --sb-trans:width .22s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
+
+/* ══ SIDEBAR ══ */
+#sb{width:var(--sw);background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:var(--sb-trans);position:relative;z-index:10;}
+#sb.collapsed{width:var(--sw-collapsed);}
+#sb .inner{width:var(--sw);display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;}
+#sb.collapsed .inner{overflow:hidden;}
+
+.sb-brand{padding:14px 12px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.sb-brand-text{overflow:hidden;white-space:nowrap;}
+.sb-brand .firm{font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;}
+.sb-brand .fy{font-size:9.5px;color:rgba(255,255,255,.38);font-family:'DM Mono',monospace;white-space:nowrap;}
+.sb-logo{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+
+#sb-toggle{position:absolute;top:12px;right:-11px;width:22px;height:22px;border-radius:50%;background:var(--blue);border:2px solid var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;z-index:20;transition:transform .22s;}
+#sb.collapsed #sb-toggle{transform:rotate(180deg);}
+
+.sb-sec{padding:12px 8px 2px;flex-shrink:0;}
+.sb-sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:3px;cursor:pointer;user-select:none;}
+.sb-sec-lbl{font-size:9px;font-weight:700;letter-spacing:1.1px;color:rgba(255,255,255,.28);text-transform:uppercase;transition:opacity .2s;}
+.sb-sec-arrow{font-size:8px;color:rgba(255,255,255,.25);transition:transform .2s;}
+.sb-sec-items{overflow:hidden;transition:max-height .25s ease, opacity .2s;}
+.sb-sec.closed .sb-sec-items{max-height:0!important;opacity:0;}
+.sb-sec.closed .sb-sec-arrow{transform:rotate(-90deg);}
+
+#sb.collapsed .sb-sec-lbl,#sb.collapsed .sb-sec-arrow,#sb.collapsed .cnt,#sb.collapsed .nav-label{opacity:0;pointer-events:none;}
+#sb.collapsed .sb-brand-text,#sb.collapsed .sb-sec-lbl{display:none;}
+
+.nav-btn{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:rgba(255,255,255,.58);transition:all .14s;border:none;background:none;width:100%;text-align:left;white-space:nowrap;overflow:hidden;}
+.nav-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-btn.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600;}
+.nav-btn .nav-icon{font-size:14px;flex-shrink:0;width:18px;text-align:center;}
+.nav-btn .nav-label{overflow:hidden;text-overflow:ellipsis;}
+.nav-btn .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.nav-btn .cnt{margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;background:rgba(255,255,255,.13);padding:1px 5px;border-radius:9px;flex-shrink:0;}
+.sb-div{height:1px;background:rgba(255,255,255,.06);margin:6px 10px;flex-shrink:0;}
+.sb-bottom{margin-top:auto;padding:8px 8px 12px;flex-shrink:0;}
+#sb.collapsed .nav-btn{justify-content:center;padding:8px 0;}
+#sb.collapsed .nav-btn .cnt{display:none;}
+
+/* ══ MAIN ══ */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#topbar{height:var(--hh);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;}
+.page-title{font-size:14px;font-weight:700;color:var(--navy);flex-shrink:0;white-space:nowrap;}
+.filter-row{display:flex;gap:7px;align-items:center;flex:1;flex-wrap:wrap;}
+.fsel,.srch{height:30px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:11.5px;color:var(--text);background:var(--bg);padding:0 10px;outline:none;transition:border-color .15s;}
+.fsel:focus,.srch:focus{border-color:var(--blue);}
+.srch{width:175px;}
+.btn{height:30px;padding:0 12px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .14s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn-pri{background:var(--blue);color:#fff;}.btn-pri:hover{background:#1251A0;}
+.btn-sec{background:var(--bg);color:var(--slate);border:1px solid var(--border);}.btn-sec:hover{background:#e4e9f2;}
+.btn-danger{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;}.btn-danger:hover{background:#FFCDD2;}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid #A5D6A7;}.btn-green:hover{background:#C8E6C9;}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border:1px solid #FFE082;}.btn-amber:hover{background:#FFE082;}
+#content{flex:1;overflow:auto;padding:14px 16px;}
+
+/* ══ KPI ══ */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:14px;}
+.kpi-card{background:var(--white);border-radius:10px;padding:13px 15px;border:1px solid var(--border);}
+.kpi-lbl{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text2);}
+.kpi-val{font-size:25px;font-weight:700;margin-top:3px;font-family:'DM Mono',monospace;}
+.kpi-sub{font-size:10.5px;color:var(--text2);margin-top:2px;}
+.kpi-blue .kpi-val{color:var(--blue);}.kpi-green .kpi-val{color:var(--green);}
+.kpi-amber .kpi-val{color:var(--amber);}.kpi-grey .kpi-val{color:var(--grey);}
+.prog-wrap{height:5px;background:var(--grey-bg);border-radius:3px;margin-top:7px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .5s;}
+
+/* ══ DASH GRID ══ */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.dash-card{background:var(--white);border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.dash-card-hdr{padding:9px 13px;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.dash-card-body{padding:11px 13px;}
+.mini-stat-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+.mini-stat{text-align:center;flex:1;min-width:42px;padding:6px 3px;border-radius:7px;}
+.msv{font-size:16px;font-weight:700;font-family:'DM Mono',monospace;}
+.msl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+.wt-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.wt-name{font-size:9.5px;width:68px;flex-shrink:0;color:var(--text2);font-weight:600;}
+.wt-bar-wrap{flex:1;height:12px;background:var(--grey-bg);border-radius:3px;overflow:hidden;display:flex;}
+.wt-seg{height:100%;transition:width .4s;}
+.wt-pct{font-size:9.5px;font-family:'DM Mono',monospace;color:var(--text2);width:28px;text-align:right;flex-shrink:0;}
+
+/* ══ WORK-TYPE LIST VIEW ══ */
+.wt-switcher{display:flex;gap:8px;margin-bottom:14px;}
+.wt-switch-btn{flex:1;padding:10px 12px;background:var(--white);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;text-align:left;}
+.wt-switch-btn:hover{border-color:#b0c4e8;background:#f7f9ff;}
+.wt-switch-btn.active{border-color:var(--blue);background:var(--blue-lt);}
+.wt-switch-title{font-size:12px;font-weight:700;color:var(--slate);}
+.wt-switch-btn.active .wt-switch-title{color:var(--blue);}
+.wt-switch-meta{font-size:10px;color:var(--text2);margin-top:2px;display:flex;gap:8px;}
+.wt-switch-pct{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);}
+.wt-main-card{background:var(--white);border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.wt-main-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.wt-main-title{font-size:14px;font-weight:700;color:var(--navy);}
+.wt-main-cnt{font-size:11px;color:var(--text2);margin-left:auto;}
+.wt-list-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;}
+.wt-tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .14s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.wt-tab:hover{color:var(--text);background:rgba(255,255,255,.6);}
+.wt-tab.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--white);}
+.wt-tab-cnt{font-size:9px;background:var(--grey-bg);color:var(--grey);padding:1px 5px;border-radius:8px;}
+.wt-tab.active .wt-tab-cnt{background:var(--blue-lt);color:var(--blue);}
+.wt-search-bar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.wt-srch{flex:1;max-width:280px;height:30px;border:1px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;padding:0 10px;outline:none;background:var(--bg);}
+.wt-srch:focus{border-color:var(--blue);}
+.wt-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+.wt-table thead th{background:var(--navy);color:rgba(255,255,255,.85);padding:8px 12px;font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-align:left;position:sticky;top:0;z-index:2;border-right:1px solid rgba(255,255,255,.07);}
+.wt-table tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+.wt-table tbody tr:hover{background:#F0F4FF;}
+.wt-table td{padding:7px 12px;vertical-align:middle;}
+.wt-list-body{overflow-y:auto;max-height:calc(100vh - 320px);}
+.wt-head-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:9px;}
+
+/* ══ TABLE ══ */
+.tbl-wrap{background:var(--white);border-radius:10px;border:1px solid var(--border);overflow:hidden;}
+.tbl-infobar{padding:8px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text2);}
+.tbl-count{font-weight:700;color:var(--text);}
+table{width:100%;border-collapse:collapse;font-size:11.5px;}
+thead th{background:var(--navy);color:rgba(255,255,255,.85);padding:8px 9px;font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-right:1px solid rgba(255,255,255,.07);white-space:nowrap;position:sticky;top:0;z-index:2;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:hover{background:#F0F4FF;}
+tbody tr.row-done{background:#F0FFF4;opacity:.8;}
+tbody tr.row-done:hover{background:#e4f9ea;opacity:1;}
+td{padding:5px 9px;vertical-align:middle;}
+.cname{font-weight:600;font-size:11.5px;}
+.type-badge{display:inline-block;font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:9px;}
+.type-Company{background:var(--blue-lt);color:var(--blue);}
+.type-Firm{background:var(--green-bg);color:var(--green);}
+.type-Trust{background:var(--amber-bg);color:var(--amber);}
+.hbadge{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:9px;}
+
+/* STATUS */
+.ssel{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;border:none;border-radius:18px;padding:3px 7px;cursor:pointer;outline:none;width:100%;min-width:105px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23999'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 5px center;padding-right:18px;}
+.s0{background:#ECEFF1;color:#546E7A;}.s1{background:#E3F2FD;color:#1565C0;}
+.s2{background:#FFF8E1;color:#F57F17;}.s3{background:#E8F5E9;color:#2E7D32;}
+.s4{background:#FBE9E7;color:#BF360C;}
+.blocked-cell{background:var(--blocked);height:22px;border-radius:4px;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.blocked-cell:hover{background:#3a3a3a;}
+.unlock-btn{font-size:9px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.65);border:none;border-radius:3px;padding:1px 4px;cursor:pointer;opacity:0;transition:opacity .15s;position:absolute;}
+.blocked-cell:hover .unlock-btn{opacity:1;}
+.date-inp,.txt-inp{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);border:1px solid transparent;border-radius:5px;padding:2px 5px;background:transparent;width:100%;outline:none;transition:border-color .15s;}
+.date-inp:focus,.txt-inp:focus{border-color:var(--blue);background:#f5f9ff;}
+.date-inp{min-width:96px;}.txt-inp{min-width:65px;}
+.pay-sel{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;border:none;border-radius:18px;padding:3px 7px;cursor:pointer;outline:none;appearance:none;}
+.p0{background:#FFEBEE;color:#C62828;}.p1{background:#FFF8E1;color:#F57F17;}
+.p2{background:#E8F5E9;color:#2E7D32;}.p3{background:#ECEFF1;color:#546E7A;}
+.spill{display:inline-flex;align-items:center;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:14px;}
+
+/* ══ UNDO BAR ══ */
+#undo-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1E293B;color:#fff;padding:9px 16px;border-radius:24px;font-size:12px;font-weight:500;box-shadow:0 4px 24px rgba(0,0,0,.28);display:flex;align-items:center;gap:12px;z-index:9000;opacity:0;transition:all .28s ease;pointer-events:none;white-space:nowrap;}
+#undo-bar.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all;}
+#undo-bar button{background:rgba(255,255,255,.18);border:none;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;}
+#undo-bar button:hover{background:rgba(255,255,255,.28);}
+#undo-bar .ub-close{background:none;font-size:14px;padding:0 3px;opacity:.6;}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:22px;right:22px;background:#1E293B;color:#fff;padding:8px 15px;border-radius:8px;font-size:11.5px;font-weight:500;box-shadow:0 4px 18px rgba(0,0,0,.22);transform:translateY(60px);opacity:0;transition:all .24s;z-index:9999;pointer-events:none;}
+#toast.show{transform:translateY(0);opacity:1;}
+
+/* ══ MODAL ══ */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.mod{background:var(--white);border-radius:12px;padding:20px;width:500px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.mod.sm{width:360px;}
+.mod h3{font-size:14px;font-weight:700;margin-bottom:13px;color:var(--navy);}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg.full{grid-column:1/-1;}
+.flbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);}
+.finp{border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+.finp:focus{border-color:var(--blue);}
+.mfooter{margin-top:14px;display:flex;gap:7px;justify-content:flex-end;}
+.note{font-size:10.5px;color:var(--text2);background:var(--amber-bg);border:1px solid #FFE082;border-radius:7px;padding:7px 11px;margin-bottom:11px;}
+
+/* HEAD CHIPS */
+.hchip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:18px;font-size:11.5px;font-weight:600;margin:3px;}
+.hchip-ic{cursor:pointer;font-size:10px;opacity:.55;transition:opacity .15s;}
+.hchip-ic:hover{opacity:1;}
+
+/* DONE BANNER */
+.done-banner{background:var(--green-bg);border:1px solid #A5D6A7;border-radius:10px;padding:11px 15px;margin-bottom:13px;display:flex;align-items:center;gap:10px;font-size:12px;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#c5cdd8;border-radius:3px;}
+.empty-st{text-align:center;padding:50px 20px;color:var(--text2);}
+.empty-st .ico{font-size:34px;margin-bottom:9px;}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav id="sb">
+  <div class="inner">
+    <div class="sb-brand">
+      <div class="sb-logo">⚖️</div>
+      <div class="sb-brand-text">
+        <div class="firm">Gandhi Arun & Co</div>
+        <div class="fy">FY 2025-26 · Audit Tracker</div>
+      </div>
+    </div>
+
+    <!-- Views -->
+    <div class="sb-sec" id="sec-views">
+      <div class="sb-sec-hdr" onclick="toggleSec('sec-views')">
+        <span class="sb-sec-lbl">Views</span>
+        <span class="sb-sec-arrow">▼</span>
+      </div>
+      <div class="sb-sec-items">
+        <button class="nav-btn active" onclick="setView('dashboard')" id="nav-dashboard">
+          <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-btn" onclick="setView('all')" id="nav-all">
+          <span class="nav-icon">📋</span><span class="nav-label">All Clients</span><span class="cnt" id="cnt-all">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('completed')" id="nav-completed">
+          <span class="nav-icon">✅</span><span class="nav-label">Completed</span><span class="cnt" id="cnt-completed">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-div"></div>
+
+    <!-- Work Type Lists -->
+    <div class="sb-sec" id="sec-wt">
+      <div class="sb-sec-hdr" onclick="toggleSec('sec-wt')">
+        <span class="sb-sec-lbl">Work Type Lists</span>
+        <span class="sb-sec-arrow">▼</span>
+      </div>
+      <div class="sb-sec-items">
+        <button class="nav-btn" onclick="setView('wt','TAX AUDIT')" id="nav-wt-TAX AUDIT">
+          <span class="nav-icon">📑</span><span class="nav-label">Tax Audit</span><span class="cnt" id="cnt-wt-TAX AUDIT">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('wt','STAT AUDIT')" id="nav-wt-STAT AUDIT">
+          <span class="nav-icon">📂</span><span class="nav-label">Stat Audit</span><span class="cnt" id="cnt-wt-STAT AUDIT">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('wt','IT RETURN')" id="nav-wt-IT RETURN">
+          <span class="nav-icon">💼</span><span class="nav-label">IT Return</span><span class="cnt" id="cnt-wt-IT RETURN">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('wt','ROC')" id="nav-wt-ROC">
+          <span class="nav-icon">🏛️</span><span class="nav-label">ROC Filing</span><span class="cnt" id="cnt-wt-ROC">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-div"></div>
+
+    <!-- By Head -->
+    <div class="sb-sec" id="sec-heads">
+      <div class="sb-sec-hdr" onclick="toggleSec('sec-heads')">
+        <span class="sb-sec-lbl">By Head &nbsp;
+          <button onclick="event.stopPropagation();openManageHeads()" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.45);font-size:8px;padding:1px 5px;border-radius:3px;cursor:pointer;">⚙ Manage</button>
+        </span>
+        <span class="sb-sec-arrow">▼</span>
+      </div>
+      <div class="sb-sec-items" id="head-nav-list"></div>
+    </div>
+
+    <div class="sb-div"></div>
+
+    <!-- By Type -->
+    <div class="sb-sec" id="sec-type">
+      <div class="sb-sec-hdr" onclick="toggleSec('sec-type')">
+        <span class="sb-sec-lbl">By Type</span>
+        <span class="sb-sec-arrow">▼</span>
+      </div>
+      <div class="sb-sec-items">
+        <button class="nav-btn" onclick="setView('type','Company')" id="nav-Company">
+          <span class="dot" style="background:#1565C0"></span><span class="nav-label">Company</span><span class="cnt" id="cnt-Company">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('type','Firm')" id="nav-Firm">
+          <span class="dot" style="background:#2E7D32"></span><span class="nav-label">Firm</span><span class="cnt" id="cnt-Firm">0</span>
+        </button>
+        <button class="nav-btn" onclick="setView('type','Trust')" id="nav-Trust">
+          <span class="dot" style="background:#F57F17"></span><span class="nav-label">Trust/AOP</span><span class="cnt" id="cnt-Trust">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sb-div"></div>
+    <div class="sb-bottom">
+      <button class="nav-btn" onclick="openAddClient()"><span class="nav-icon">➕</span><span class="nav-label">Add Client</span></button>
+      <button class="nav-btn" onclick="exportCSV()"><span class="nav-icon">⬇</span><span class="nav-label">Export CSV</span></button>
+      <button class="nav-btn" onclick="saveData()"><span class="nav-icon">💾</span><span class="nav-label">Save</span></button>
+      <button class="nav-btn" onclick="resetAll()" style="color:rgba(255,100,100,.55)"><span class="nav-icon">↺</span><span class="nav-label">Reset Data</span></button>
+    </div>
+  </div>
+  <button id="sb-toggle" onclick="toggleSidebar()" title="Collapse sidebar">◀</button>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div id="main">
+  <div id="topbar">
+    <div class="page-title" id="page-title">Dashboard</div>
+    <div class="filter-row" id="filter-row" style="display:none">
+      <input class="srch" id="search" placeholder="🔍 Search client…" oninput="renderTable()">
+      <select class="fsel" id="f-head" onchange="renderTable()">
+        <option value="">All Heads</option>
+      </select>
+      <select class="fsel" id="f-type" onchange="renderTable()">
+        <option value="">All Types</option>
+        <option>Company</option><option>Firm</option><option>Trust</option>
+      </select>
+      <select class="fsel" id="f-status" onchange="renderTable()">
+        <option value="">All Statuses</option>
+        <option>Not Started</option><option>In Progress</option>
+        <option>Review Pending</option><option>Completed</option><option>On Hold</option>
+      </select>
+      <select class="fsel" id="f-wt" onchange="renderTable()">
+        <option value="">All Work Types</option>
+        <option>TAX AUDIT</option><option>STAT AUDIT</option>
+        <option>IT RETURN</option><option>ROC</option>
+      </select>
+    </div>
+    <div id="tb-acts" style="display:flex;gap:6px;margin-left:auto;flex-shrink:0"></div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<div id="undo-bar">
+  <span id="undo-msg">Action undone</span>
+  <button onclick="doUndo()">↩ Undo</button>
+  <button class="ub-close" onclick="hideUndo()">✕</button>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── DATA INJECT ───────────────────────────────────────────────────────────────
+const RAW_DATA=[{"id": 1, "head": "DEVYANI", "type": "Company", "name": "HBS", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 2, "head": "DEVYANI", "type": "Company", "name": "RPS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 3, "head": "DEVYANI", "type": "Company", "name": "SKS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 4, "head": "DEVYANI", "type": "Company", "name": "SRS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 5, "head": "DEVYANI", "type": "Company", "name": "JMB TRADING", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 6, "head": "DEVYANI", "type": "Company", "name": "TARAJYOT", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 7, "head": "DEVYANI", "type": "Company", "name": "GRIDIRON FITNESS", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 8, "head": "DEVYANI", "type": "Company", "name": "CWBTA", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 9, "head": "DEVYANI", "type": "Company", "name": "ARINDHAM INVESTMENTS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 10, "head": "DEVYANI", "type": "Company", "name": "EXIM TRADE", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 11, "head": "DEVYANI", "type": "Company", "name": "YG COMMERCIAL", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 12, "head": "DEVYANI", "type": "Company", "name": "NUGGET FINANCE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 13, "head": "DEVYANI", "type": "Company", "name": "DIPAK ACCES", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": false, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": null, "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 14, "head": "DEVYANI", "type": "Company", "name": "JJ SONAR", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 15, "head": "DEVYANI", "type": "Company", "name": "SEPL", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 16, "head": "DEVYANI", "type": "Company", "name": "BUZZIFY MEDIA", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 17, "head": "DEVYANI", "type": "Company", "name": "EDUCERA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 18, "head": "DEVYANI", "type": "Company", "name": "VIPDEE LLP", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 19, "head": "DEVYANI", "type": "Company", "name": "GLOBISTICS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 20, "head": "DEVYANI", "type": "Company", "name": "NILMANI FINANCE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 21, "head": "HITEN", "type": "Company", "name": "SHAFFIN SAFETY", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 22, "head": "HITEN", "type": "Company", "name": "PUNJANI MERC", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 23, "head": "HITEN", "type": "Company", "name": "PUNJANI GRAPHICS", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 24, "head": "HITEN", "type": "Company", "name": "MMR PROPERTIES", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 25, "head": "HITEN", "type": "Company", "name": "SINGEM LIFE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 26, "head": "HITEN", "type": "Company", "name": "KK INFRA", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 27, "head": "HITEN", "type": "Company", "name": "MAA SHITALA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 28, "head": "HITEN", "type": "Company", "name": "SWARNADHARA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 29, "head": "HITEN", "type": "Company", "name": "RAJDA SALES", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 30, "head": "HITEN", "type": "Company", "name": "GLOXINIA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 31, "head": "HITEN", "type": "Company", "name": "HARESH PVT LTD", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 32, "head": "HITEN", "type": "Company", "name": "GAUTAM TRADING", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 33, "head": "HITEN", "type": "Company", "name": "SPECTRONICS LLP", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 34, "head": "HITEN", "type": "Company", "name": "PROCON CONTROL", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 35, "head": "HITEN", "type": "Company", "name": "GREWAL BULK PVT LTD", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 36, "head": "HITEN", "type": "Company", "name": "PARTH TECHNO LLP", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 37, "head": "HITEN", "type": "Company", "name": "HUNGERFORD", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 38, "head": "HITEN", "type": "Company", "name": "ASHOK SAURABH LLP", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 39, "head": "HITEN", "type": "Company", "name": "MDC ORGANICS P LTD", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 40, "head": "HITEN", "type": "Company", "name": "SUNSHINE GUEST HOUSE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 41, "head": "HITEN", "type": "Company", "name": "RAHUL TRACOM", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 42, "head": "HITEN", "type": "Company", "name": "GLOBE SOURCE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 43, "head": "HITEN", "type": "Company", "name": "ALBERT", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 44, "head": "HITEN", "type": "Company", "name": "EMPEROR", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 45, "head": "HITEN", "type": "Company", "name": "SKYLIGHT", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 46, "head": "HITEN", "type": "Company", "name": "SUBHSHANTI", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 47, "head": "URVI", "type": "Company", "name": "MEET TEXTRIMS PVT LTD", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 48, "head": "URVI", "type": "Company", "name": "LALLAMOOKH", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 49, "head": "URVI", "type": "Company", "name": "MAGNA EVENTS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 50, "head": "URVI", "type": "Company", "name": "SUPERSONIC", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 51, "head": "URVI", "type": "Company", "name": "INNOVA", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 52, "head": "URVI", "type": "Company", "name": "EXIM DISTRIBUTORS PVT LTD", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 53, "head": "URVI", "type": "Company", "name": "MAKU TEXTILES", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 54, "head": "URVI", "type": "Company", "name": "MEHTA FORMULATION", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 55, "head": "URVI", "type": "Company", "name": "KAMDAR DISTRIBUTORS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 56, "head": "URVI", "type": "Company", "name": "HARMONY", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 57, "head": "URVI", "type": "Company", "name": "MAXIMUS ELECTRIC", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 58, "head": "URVI", "type": "Company", "name": "RUPA JEWELLERS", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 59, "head": "URVI", "type": "Company", "name": "SMILEY", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 60, "head": "URVI", "type": "Company", "name": "DUNCAN TEA LTD", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 61, "head": "URVI", "type": "Company", "name": "DUNCAN TEA HOUSE", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 62, "head": "URVI", "type": "Company", "name": "UTTARPARA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 63, "head": "URVI", "type": "Company", "name": "CINRAC", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": true}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": "Not Started"}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 64, "head": "DEVYANI", "type": "Firm", "name": "SUDHIR ADALJA & CO", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 65, "head": "DEVYANI", "type": "Firm", "name": "TORAL KAMDAR", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 66, "head": "DEVYANI", "type": "Firm", "name": "MANTOR INT", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 67, "head": "DEVYANI", "type": "Firm", "name": "VAISHIKA ENT", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 68, "head": "DEVYANI", "type": "Firm", "name": "THE JAM BAM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 69, "head": "DEVYANI", "type": "Firm", "name": "PHOENIX CREATION", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 70, "head": "DEVYANI", "type": "Firm", "name": "NARROTAM BHAGWANJI", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 71, "head": "DEVYANI", "type": "Firm", "name": "MANOJ DHUPELIA F.S.", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 72, "head": "DEVYANI", "type": "Firm", "name": "DOSHI SOFTWARE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 73, "head": "DEVYANI", "type": "Firm", "name": "APPU INTERIORS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 74, "head": "DEVYANI", "type": "Firm", "name": "GIRIRAJ ELEC", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 75, "head": "DEVYANI", "type": "Firm", "name": "SAR INT", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 76, "head": "DEVYANI", "type": "Firm", "name": "BHALLI ENT", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 77, "head": "DEVYANI", "type": "Firm", "name": "RAJANAKANT DESAI", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 78, "head": "URVI", "type": "Firm", "name": "PEEKAY CORPN", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 79, "head": "URVI", "type": "Firm", "name": "EXIM PHARMA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 80, "head": "URVI", "type": "Firm", "name": "EXIM DISTRIBUTORS-FIRM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 81, "head": "URVI", "type": "Firm", "name": "ELECTRICAL MICANITE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 82, "head": "URVI", "type": "Firm", "name": "JAMNA DEPT STORE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 83, "head": "URVI", "type": "Firm", "name": "INTERNATIONAL TRADING", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 84, "head": "URVI", "type": "Firm", "name": "MEGNIL CHEMICAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 85, "head": "URVI", "type": "Firm", "name": "CHEMI SOLVE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 86, "head": "URVI", "type": "Firm", "name": "PS LOGISTICS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 87, "head": "URVI", "type": "Firm", "name": "GANNANAYAK", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 88, "head": "URVI", "type": "Firm", "name": "HARSHIT ELECTRIC", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 89, "head": "URVI", "type": "Firm", "name": "SHARP ELECTRIC", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 90, "head": "URVI", "type": "Firm", "name": "SHARP CABLES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 91, "head": "URVI", "type": "Firm", "name": "PRADIP ESTATE TRUST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 92, "head": "URVI", "type": "Firm", "name": "VAIJNATH TEA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 93, "head": "URVI", "type": "Firm", "name": "CAP & CO", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 94, "head": "URVI", "type": "Firm", "name": "M NIRAV KUMAR", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 95, "head": "HITEN", "type": "Firm", "name": "GARGEE CREATION", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 96, "head": "HITEN", "type": "Firm", "name": "BOMBAY LEATHER", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 97, "head": "HITEN", "type": "Firm", "name": "FAIRDEAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 98, "head": "HITEN", "type": "Firm", "name": "GAZIANI", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 99, "head": "HITEN", "type": "Firm", "name": "INDUSTRIAL ENTERPRISE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 100, "head": "HITEN", "type": "Firm", "name": "SJ CREATIONS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 101, "head": "HITEN", "type": "Firm", "name": "GOURI PRASAD GOENKA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 102, "head": "HITEN", "type": "Firm", "name": "VULCAN", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 103, "head": "HITEN", "type": "Firm", "name": "DIVYAKRISH", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 104, "head": "HITEN", "type": "Firm", "name": "M R APPARELS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 105, "head": "HITEN", "type": "Firm", "name": "ROYAL BLUE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 106, "head": "HITEN", "type": "Firm", "name": "DINESH TEXTILES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 107, "head": "HITEN", "type": "Firm", "name": "YASH COLLECTION", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 108, "head": "HITEN", "type": "Firm", "name": "HINDUSTAN OIL INDUSTRIES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 109, "head": "HITEN", "type": "Firm", "name": "RK GEMS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 110, "head": "HITEN", "type": "Firm", "name": "ITC", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 111, "head": "HITEN", "type": "Firm", "name": "M KISHORE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 112, "head": "HITEN", "type": "Firm", "name": "KISHOR BROTHERS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 113, "head": "HITEN", "type": "Firm", "name": "A J TRADERS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 114, "head": "HITEN", "type": "Firm", "name": "ASR ENTERPRISE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 115, "head": "HITEN", "type": "Firm", "name": "ADITYA COMMERCIAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 116, "head": "HITEN", "type": "Firm", "name": "SS ENTERPRISE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 117, "head": "HITEN", "type": "Firm", "name": "KHARA TRADE CENTRE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 118, "head": "HITEN", "type": "Firm", "name": "HARESH ALLUMINIUM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 119, "head": "HITEN", "type": "Firm", "name": "PARAS ROAD", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 120, "head": "HITEN", "type": "Firm", "name": "PARAS TRACTORS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 121, "head": "HITEN", "type": "Firm", "name": "AMISHA UDYOG", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 122, "head": "HITEN", "type": "Firm", "name": "AMISHA ENTERPRISE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 123, "head": "HITEN", "type": "Firm", "name": "MODERN TIMES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 124, "head": "HITEN", "type": "Firm", "name": "SWASTIK MATERIAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 125, "head": "HITEN", "type": "Firm", "name": "KESHAVLAL & CO", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 126, "head": "HITEN", "type": "Firm", "name": "VIJAY ORDER SUPPLIERS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 127, "head": "HITEN", "type": "Firm", "name": "SIGMA INC", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 128, "head": "HITEN", "type": "Firm", "name": "SAIMED INNOVATION", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 129, "head": "HITEN", "type": "Firm", "name": "SAI SPECTRONICS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 130, "head": "HITEN", "type": "Firm", "name": "RELIABLE DISTRIBUTORS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 131, "head": "HITEN", "type": "Firm", "name": "BARAI & TURAKHIA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 132, "head": "HITEN", "type": "Firm", "name": "B SANGHVI & SONS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 133, "head": "HITEN", "type": "Firm", "name": "B N ELECTRONICS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 134, "head": "HITEN", "type": "Firm", "name": "DHRUV INT", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 135, "head": "HITEN", "type": "Firm", "name": "DP TRADING", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 136, "head": "HITEN", "type": "Firm", "name": "SUPREME", "scope": {"TAX AUDIT": true, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 137, "head": "HITEN", "type": "Firm", "name": "ARIHANT CBX", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 138, "head": "HITEN", "type": "Firm", "name": "BB TRAVELS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 139, "head": "HITEN", "type": "Firm", "name": "R & B SERVICES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 140, "head": "HITEN", "type": "Firm", "name": "SNB CONSULTANTS", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 141, "head": "HITEN", "type": "Firm", "name": "SHARLIV GLOBAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 142, "head": "HITEN", "type": "Firm", "name": "J YASH", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 143, "head": "HITEN", "type": "Firm", "name": "GREWAL AUTO", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 144, "head": "HITEN", "type": "Firm", "name": "GREWAL MOTORS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 145, "head": "HITEN", "type": "Firm", "name": "KRISHNA DEEKSHA", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 146, "head": "HITEN", "type": "Firm", "name": "EKTA FABRICS", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 147, "head": "HITEN", "type": "Firm", "name": "KAMAL CHEM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 148, "head": "HITEN", "type": "Firm", "name": "LOUTUS CHEM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 149, "head": "HITEN", "type": "Firm", "name": "MAHAVIR TRADING", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 150, "head": "HITEN", "type": "Firm", "name": "MEHTA TRADING", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 151, "head": "HITEN", "type": "Firm", "name": "RUSHABH TEXTILES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 152, "head": "HITEN", "type": "Firm", "name": "JAMUNA TEXTILES", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 153, "head": "HITEN", "type": "Firm", "name": "ATUL TRADING", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 154, "head": "HITEN", "type": "Firm", "name": "SRIMAL INTERNATIONAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 155, "head": "HITEN", "type": "Firm", "name": "MODI DYE CHEM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 156, "head": "HITEN", "type": "Firm", "name": "MDC EXIM MARKETING", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 157, "head": "HITEN", "type": "Firm", "name": "GHOSH ENGINEERING", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 158, "head": "HITEN", "type": "Firm", "name": "BIDYUT GRAH", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 159, "head": "HITEN", "type": "Firm", "name": "KANTILAL V SHAH", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 160, "head": "HITEN", "type": "Firm", "name": "RAHUL ENTERPRISE", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 161, "head": "HITEN", "type": "Firm", "name": "CHEMTEX", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 162, "head": "HITEN", "type": "Firm", "name": "VIRAT PRINTERS", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 163, "head": "HITEN", "type": "Trust", "name": "GUJARAT CLUB", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 164, "head": "HITEN", "type": "Trust", "name": "LOHANA MAHAJAN", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 165, "head": "HITEN", "type": "Trust", "name": "PATEL MANDAVRAI TRUST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 166, "head": "HITEN", "type": "Trust", "name": "ASHIRVAD APPT", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 167, "head": "HITEN", "type": "Trust", "name": "CHANDRIKA VORA CH TR", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 168, "head": "HITEN", "type": "Trust", "name": "FATEH KUSUM", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 169, "head": "URVI", "type": "Trust", "name": "KAPOLE SAMAJ", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 170, "head": "URVI", "type": "Trust", "name": "MODH UTEJAK", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 171, "head": "URVI", "type": "Trust", "name": "ZALAWADI", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 172, "head": "URVI", "type": "Trust", "name": "TOLLYGUNJ JAIN MANDIR", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 173, "head": "URVI", "type": "Trust", "name": "DAWABAZAR MANDAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 174, "head": "URVI", "type": "Trust", "name": "SHREE LAXMINARAYAN MANDIR", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 175, "head": "URVI", "type": "Trust", "name": "MAHILA MANDAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 176, "head": "URVI", "type": "Trust", "name": "STREE MANDAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 177, "head": "URVI", "type": "Trust", "name": "STREE MANDAL HOSPITAL", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 178, "head": "URVI", "type": "Trust", "name": "JAIN MANDIR", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 179, "head": "URVI", "type": "Trust", "name": "CHABBILDAS TRUST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 180, "head": "URVI", "type": "Trust", "name": "KASHIBEN", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 181, "head": "URVI", "type": "Trust", "name": "SOUTH CITY PUJA COMM", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 182, "head": "URVI", "type": "Trust", "name": "SOUTH CITY", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 183, "head": "URVI", "type": "Trust", "name": "BALLY HIGH", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 184, "head": "URVI", "type": "Trust", "name": "UDITA HOUSING", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 185, "head": "URVI", "type": "Trust", "name": "NEELKAMAL", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 186, "head": "URVI", "type": "Trust", "name": "RMAOA", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 187, "head": "DEVYANI", "type": "Trust", "name": "DEVI DIPA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 188, "head": "DEVYANI", "type": "Trust", "name": "SUTRA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 189, "head": "DEVYANI", "type": "Trust", "name": "KAMANI JAIN BHAWAN", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 190, "head": "DEVYANI", "type": "Trust", "name": "VAISHALI APPT", "scope": {"TAX AUDIT": false, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 191, "head": "DEVYANI", "type": "Trust", "name": "GUJARATI SAMAJ", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 192, "head": "DEVYANI", "type": "Trust", "name": "FORT ROYAL", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 193, "head": "DEVYANI", "type": "Trust", "name": "SAI INT TRUST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 194, "head": "DEVYANI", "type": "Trust", "name": "PRANJIVAN POPAT TRUST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 195, "head": "DEVYANI", "type": "Trust", "name": "PRAKASH GANDHI C.T.", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 196, "head": "DEVYANI", "type": "Trust", "name": "KANTILAL DHUPELIA", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 197, "head": "DEVYANI", "type": "Trust", "name": "VENUS COOP", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 198, "head": "DEVYANI", "type": "Trust", "name": "8 PARSEE CH ST", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 199, "head": "DEVYANI", "type": "Trust", "name": "SURAIYA FOUND", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 200, "head": "DEVYANI", "type": "Trust", "name": "J K SONS", "scope": {"TAX AUDIT": false, "STAT AUDIT": true, "IT RETURN": false, "ROC": false}, "status": {"TAX AUDIT": null, "STAT AUDIT": "Not Started", "IT RETURN": null, "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 201, "head": "DEVYANI", "type": "Trust", "name": "K DESAI FOUND", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 202, "head": "DEVYANI", "type": "Trust", "name": "R DESAI FOUND", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}, {"id": 203, "head": "DEVYANI", "type": "Trust", "name": "RAMPYARI F", "scope": {"TAX AUDIT": true, "STAT AUDIT": false, "IT RETURN": true, "ROC": false}, "status": {"TAX AUDIT": "Not Started", "STAT AUDIT": null, "IT RETURN": "Not Started", "ROC": null}, "dateReceived": "", "completedOn": "", "staff": "", "invNo": "", "payment": "Pending", "remarks": ""}];
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const WT=['TAX AUDIT','STAT AUDIT','IT RETURN','ROC'];
+const STATUSES=['Not Started','In Progress','Review Pending','Completed','On Hold'];
+const SCSS={'Not Started':'s0','In Progress':'s1','Review Pending':'s2','Completed':'s3','On Hold':'s4'};
+const PCSS={'Pending':'p0','Partial':'p1','Received':'p2','Written Off':'p3'};
+const SEGS={'Not Started':'#ECEFF1','In Progress':'#90CAF9','Review Pending':'#FFE082','Completed':'#81C784','On Hold':'#FFAB91'};
+const SPILLS={'Not Started':['#ECEFF1','#546E7A'],'In Progress':['#E3F2FD','#1565C0'],'Review Pending':['#FFF8E1','#F57F17'],'Completed':['#E8F5E9','#2E7D32'],'On Hold':['#FBE9E7','#BF360C']};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let data=[], heads=[], currentView='dashboard', nextId=1;
+// Undo stack — stores snapshots {desc, data, heads}
+let undoStack=[], undoTimer=null;
+
+function getDefaultHeads(){return [{name:'DEVYANI',color:'#7C4DFF'},{name:'HITEN',color:'#0288D1'},{name:'URVI',color:'#F57F17'}];}
+
+function init(){
+  const s=localStorage.getItem('ga_v5');
+  if(s){const p=JSON.parse(s);data=p.data;heads=p.heads;}
+  else{data=JSON.parse(JSON.stringify(RAW_DATA));heads=getDefaultHeads();}
+  nextId=data.length?Math.max(...data.map(d=>d.id))+1:1;
+  rebuildSidebar();updateCounts();setView('dashboard');
+}
+
+function saveData(){
+  localStorage.setItem('ga_v5',JSON.stringify({data,heads}));
+}
+setInterval(saveData,30000);
+
+function resetAll(){
+  if(!confirm('Reset ALL data to original? Cannot be undone.'))return;
+  localStorage.removeItem('ga_v5');
+  data=JSON.parse(JSON.stringify(RAW_DATA));heads=getDefaultHeads();nextId=data.length+1;
+  rebuildSidebar();updateCounts();setView('dashboard');toast('↺ Reset to default');
+}
+
+// ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────────
+function toggleSidebar(){
+  document.getElementById('sb').classList.toggle('collapsed');
+}
+function toggleSec(id){
+  const sec=document.getElementById(id);
+  sec.classList.toggle('closed');
+  // set explicit max-height for animation
+  const items=sec.querySelector('.sb-sec-items');
+  if(!sec.classList.contains('closed')){items.style.maxHeight=items.scrollHeight+50+'px';}
+  else{items.style.maxHeight='0';}
+}
+// init section max-heights
+function initSections(){
+  document.querySelectorAll('.sb-sec').forEach(sec=>{
+    const items=sec.querySelector('.sb-sec-items');
+    if(items) items.style.maxHeight=items.scrollHeight+80+'px';
+  });
+}
+
+// ── HEADS ─────────────────────────────────────────────────────────────────────
+function headColor(n){const h=heads.find(h=>h.name===n);return h?h.color:'#546E7A';}
+
+function rebuildSidebar(){
+  const el=document.getElementById('head-nav-list');
+  el.innerHTML=heads.map(h=>`
+    <button class="nav-btn" onclick="setView('head','${h.name}')" id="nav-${h.name}">
+      <span class="dot" style="background:${h.color}"></span>
+      <span class="nav-label">${cap(h.name)}</span>
+      <span class="cnt" id="cnt-${h.name}">0</span>
+    </button>`).join('');
+  const sel=document.getElementById('f-head');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">All Heads</option>'+heads.map(h=>`<option${h.name===cur?' selected':''}>${h.name}</option>`).join('');
+  }
+  setTimeout(initSections,10);
+  updateCounts();
+}
+
+function cap(s){return s.charAt(0)+s.slice(1).toLowerCase();}
+
+function openManageHeads(){
+  const chips=heads.map((h,i)=>`
+    <div class="hchip" style="background:${h.color}22;color:${h.color};border:1px solid ${h.color}44">
+      <span>${h.name}</span>
+      <span class="hchip-ic" onclick="renameHead(${i})" title="Rename">✏️</span>
+      <span class="hchip-ic" onclick="pickHeadColor(${i})" title="Colour">🎨</span>
+      <span class="hchip-ic" onclick="deleteHead(${i})" title="Delete">✕</span>
+    </div>`).join('');
+  showModal(`<h3>⚙️ Manage Heads</h3>
+    <div class="note">✏️ Click the pencil on any head to rename it. All clients are updated automatically.</div>
+    <div id="hchips" style="margin-bottom:13px">${chips}</div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="fg" style="flex:1"><label class="flbl">New Head Name</label>
+        <input class="finp" id="nh-name" placeholder="e.g. ASHOK SIR" style="text-transform:uppercase"></div>
+      <div class="fg"><label class="flbl">Colour</label>
+        <input type="color" id="nh-color" value="#546E7A" style="height:34px;border:1px solid var(--border);border-radius:7px;cursor:pointer;width:48px;padding:2px 3px;"></div>
+      <button class="btn btn-green" onclick="addHead()">+ Add</button>
+    </div>
+    <div class="mfooter"><button class="btn btn-pri" onclick="closeModal()">Done</button></div>`);
+}
+
+function addHead(){
+  const name=document.getElementById('nh-name').value.trim().toUpperCase();
+  const color=document.getElementById('nh-color').value;
+  if(!name){toast('⚠️ Enter a name');return;}
+  if(heads.find(h=>h.name===name)){toast('⚠️ Already exists');return;}
+  pushUndo('Add head '+name);
+  heads.push({name,color});
+  rebuildSidebar();saveData();openManageHeads();toast(`✅ "${name}" added`);
+}
+
+function renameHead(i){
+  const old=heads[i].name;
+  const nn=(prompt(`Rename "${old}" to:`,old)||'').trim().toUpperCase();
+  if(!nn||nn===old)return;
+  if(heads.find((h,j)=>h.name===nn&&j!==i)){alert('Name already in use.');return;}
+  pushUndo(`Rename head ${old} → ${nn}`);
+  heads[i].name=nn;
+  data.forEach(d=>{if(d.head===old)d.head=nn;});
+  rebuildSidebar();saveData();openManageHeads();
+  toast(`✅ Renamed to "${nn}"`);
+}
+
+function pickHeadColor(i){
+  const color=prompt(`Hex colour for ${heads[i].name}:`,heads[i].color);
+  if(!color)return;
+  pushUndo('Change colour '+heads[i].name);
+  heads[i].color=color;rebuildSidebar();saveData();openManageHeads();
+}
+
+function deleteHead(i){
+  const name=heads[i].name;
+  const cnt=data.filter(d=>d.head===name).length;
+  if(!confirm(`Delete "${name}"? ${cnt} client(s) will become unassigned.`))return;
+  pushUndo('Delete head '+name);
+  data.forEach(d=>{if(d.head===name)d.head='';});
+  heads.splice(i,1);rebuildSidebar();saveData();closeModal();
+  setView('dashboard');toast(`🗑 "${name}" deleted`);
+}
+
+// ── COUNTS ────────────────────────────────────────────────────────────────────
+function isFullyDone(d){return WT.every(wt=>!d.scope[wt]||d.status[wt]==='Completed');}
+function clientSt(d){
+  const a=WT.filter(wt=>d.scope[wt]);
+  if(!a.length)return 'N/A';
+  if(a.every(wt=>d.status[wt]==='Completed'))return 'Completed';
+  if(a.some(wt=>d.status[wt]==='In Progress'))return 'In Progress';
+  if(a.some(wt=>d.status[wt]==='Review Pending'))return 'Review Pending';
+  if(a.some(wt=>d.status[wt]==='On Hold'))return 'On Hold';
+  return 'Not Started';
+}
+function safe(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function updateCounts(){
+  safe('cnt-all',data.length);
+  safe('cnt-completed',data.filter(isFullyDone).length);
+  safe('cnt-Company',data.filter(d=>d.type==='Company').length);
+  safe('cnt-Firm',data.filter(d=>d.type==='Firm').length);
+  safe('cnt-Trust',data.filter(d=>d.type==='Trust').length);
+  WT.forEach(wt=>safe(`cnt-wt-${wt}`,data.filter(d=>d.scope[wt]).length));
+  heads.forEach(h=>safe(`cnt-${h.name}`,data.filter(d=>d.head===h.name).length));
+}
+
+// ── UNDO ──────────────────────────────────────────────────────────────────────
+function pushUndo(desc){
+  undoStack.push({desc,data:JSON.stringify(data),heads:JSON.stringify(heads)});
+  if(undoStack.length>30)undoStack.shift();
+  showUndoBar(desc);
+}
+function showUndoBar(desc){
+  document.getElementById('undo-msg').textContent=`"${desc}"`;
+  document.getElementById('undo-bar').classList.add('show');
+  clearTimeout(undoTimer);
+  undoTimer=setTimeout(hideUndo,6000);
+}
+function hideUndo(){document.getElementById('undo-bar').classList.remove('show');}
+function doUndo(){
+  if(!undoStack.length){toast('Nothing to undo');hideUndo();return;}
+  const snap=undoStack.pop();
+  data=JSON.parse(snap.data);heads=JSON.parse(snap.heads);
+  nextId=data.length?Math.max(...data.map(d=>d.id))+1:1;
+  rebuildSidebar();updateCounts();saveData();
+  hideUndo();toast('↩ Undone: '+snap.desc);
+  // re-render current view
+  if(currentView==='dashboard')renderDashboard();
+  else if(currentView==='completed')renderCompleted();
+  else if(currentView==='wt')renderWTList();
+  else renderTable();
+}
+// Keyboard shortcut Ctrl+Z
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();doUndo();}});
+
+// ── VIEW ROUTER ───────────────────────────────────────────────────────────────
+let wtActiveFilter='TAX AUDIT';
+function setView(view,filter=''){
+  currentView=view;
+  if(view==='wt')wtActiveFilter=filter;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const fr=document.getElementById('filter-row');
+  const ta=document.getElementById('tb-acts');ta.innerHTML='';
+  const labels={dashboard:'Dashboard',all:'All Clients',completed:'✅ Completed',
+    head:`Head: ${filter}`,type:`Type: ${filter}`,
+    wt:{'TAX AUDIT':'📑 Tax Audit','STAT AUDIT':'📂 Stat Audit','IT RETURN':'💼 IT Return','ROC':'🏛️ ROC Filing'}[filter]||filter};
+  document.getElementById('page-title').textContent=labels[view]||(labels[view]?labels[view]:`${view}`);
+  if(view==='dashboard'){document.getElementById('nav-dashboard').classList.add('active');fr.style.display='none';renderDashboard();}
+  else if(view==='completed'){document.getElementById('nav-completed').classList.add('active');fr.style.display='none';renderCompleted();}
+  else if(view==='wt'){
+    const navId=`nav-wt-${filter}`;document.getElementById(navId)?.classList.add('active');
+    fr.style.display='none';renderWTList(filter);
+  }
+  else{
+    fr.style.display='flex';
+    ta.innerHTML=`<button class="btn btn-pri" onclick="openAddClient()">➕ Add Client</button>`;
+    if(view==='all'){document.getElementById('nav-all').classList.add('active');resetFilters();}
+    else if(view==='head'){document.getElementById(`nav-${filter}`)?.classList.add('active');document.getElementById('f-head').value=filter;document.getElementById('f-type').value='';}
+    else if(view==='type'){document.getElementById(`nav-${filter}`)?.classList.add('active');document.getElementById('f-type').value=filter;document.getElementById('f-head').value='';}
+    renderTable();
+  }
+}
+function resetFilters(){['f-head','f-type','f-status','f-wt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const s=document.getElementById('search');if(s)s.value='';}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const ts=WT.reduce((s,wt)=>s+data.filter(d=>d.scope[wt]).length,0);
+  const td=WT.reduce((s,wt)=>s+data.filter(d=>d.status[wt]==='Completed').length,0);
+  const ti=WT.reduce((s,wt)=>s+data.filter(d=>d.status[wt]==='In Progress').length,0);
+  const tr=WT.reduce((s,wt)=>s+data.filter(d=>d.status[wt]==='Review Pending').length,0);
+  const pct=ts>0?Math.round(td/ts*100):0;const fd=data.filter(isFullyDone).length;
+  let h=`<div class="kpi-row">
+    <div class="kpi-card kpi-blue"><div class="kpi-lbl">Total Clients</div><div class="kpi-val">${data.length}</div><div class="kpi-sub">${ts} tasks in scope</div></div>
+    <div class="kpi-card kpi-green"><div class="kpi-lbl">Completed Tasks</div><div class="kpi-val">${td}</div><div class="kpi-sub">${fd} clients fully done</div><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div></div>
+    <div class="kpi-card kpi-blue"><div class="kpi-lbl">In Progress</div><div class="kpi-val">${ti}</div><div class="kpi-sub">tasks active</div></div>
+    <div class="kpi-card kpi-amber"><div class="kpi-lbl">Review Pending</div><div class="kpi-val">${tr}</div><div class="kpi-sub">awaiting review</div></div>
+    <div class="kpi-card kpi-grey"><div class="kpi-lbl">Overall Progress</div><div class="kpi-val">${pct}%</div><div class="kpi-sub">${td}/${ts} tasks</div><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div></div>
+  </div><div class="dash-grid">`;
+  heads.forEach(hd=>{
+    const hc=data.filter(d=>d.head===hd.name);
+    const ns=hc.filter(d=>clientSt(d)==='Not Started').length;
+    const ip=hc.filter(d=>clientSt(d)==='In Progress').length;
+    const rp=hc.filter(d=>clientSt(d)==='Review Pending').length;
+    const cp=hc.filter(isFullyDone).length;
+    h+=`<div class="dash-card"><div class="dash-card-hdr" style="color:${hd.color};background:${hd.color}18">${hd.name} · ${hc.length} clients</div><div class="dash-card-body">
+    <div class="mini-stat-row">
+      <div class="mini-stat" style="background:#ECEFF1"><div class="msv" style="color:#546E7A">${ns}</div><div class="msl" style="color:#546E7A">Not Strtd</div></div>
+      <div class="mini-stat" style="background:#E3F2FD"><div class="msv" style="color:#1565C0">${ip}</div><div class="msl" style="color:#1565C0">In Prog</div></div>
+      <div class="mini-stat" style="background:#FFF8E1"><div class="msv" style="color:#F57F17">${rp}</div><div class="msl" style="color:#F57F17">Review</div></div>
+      <div class="mini-stat" style="background:#E8F5E9"><div class="msv" style="color:#2E7D32">${cp}</div><div class="msl" style="color:#2E7D32">Done</div></div>
+    </div>`;
+    WT.forEach(wt=>{
+      const ins=hc.filter(d=>d.scope[wt]).length;if(!ins)return;
+      const cnts={};STATUSES.forEach(s=>cnts[s]=hc.filter(d=>d.status[wt]===s).length);
+      const dp=Math.round((cnts['Completed']||0)/ins*100);
+      h+=`<div class="wt-row"><div class="wt-name">${wt.replace(' AUDIT','').replace('IT RETURN','IT RET').replace('STAT ','ST.')}</div><div class="wt-bar-wrap">`;
+      STATUSES.forEach(s=>{const w=(cnts[s]||0)/ins*100;if(w>0)h+=`<div class="wt-seg" title="${s}: ${cnts[s]}" style="width:${w.toFixed(1)}%;background:${SEGS[s]}"></div>`;});
+      h+=`</div><div class="wt-pct">${dp}%</div></div>`;
+    });
+    h+=`<div style="margin-top:9px;text-align:right"><button class="btn btn-sec" style="height:24px;font-size:10.5px" onclick="setView('head','${hd.name}')">View →</button></div></div></div>`;
+  });
+  // Payment
+  const fmtR=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+  const tF=data.reduce((s,d)=>s+(parseFloat(d.fees)||0),0);
+  h+=`<div class="dash-card"><div class="dash-card-hdr" style="color:var(--slate)">💳 Fees & Payment</div><div class="dash-card-body">
+    <div style="font-size:19px;font-weight:700;font-family:'DM Mono',monospace;color:var(--navy);margin-bottom:9px">${fmtR(tF)}</div>`;
+  [['Pending','#FFEBEE','#C62828'],['Partial','#FFF8E1','#F57F17'],['Received','#E8F5E9','#2E7D32'],['Written Off','#ECEFF1','#546E7A']].forEach(([ps,bg,fg])=>{
+    const cnt=data.filter(d=>d.payment===ps).length;
+    const amt=data.reduce((s,d)=>d.payment===ps?s+(parseFloat(d.fees)||0):s,0);
+    h+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;padding:5px 9px;background:${bg};border-radius:6px">
+      <span style="font-size:10.5px;font-weight:700;color:${fg};flex:1">${ps}</span>
+      <span style="font-size:10px;font-family:'DM Mono',monospace;color:${fg}">${cnt}</span>
+      <span style="font-size:10px;font-family:'DM Mono',monospace;color:${fg};margin-left:7px">${fmtR(amt)}</span>
+    </div>`;
+  });
+  h+=`</div></div></div>`;
+  document.getElementById('content').innerHTML=h;
+}
+
+// ── WORK TYPE LIST VIEW ───────────────────────────────────────────────────────
+let wtStatusFilter='all', wtSearch='';
+function renderWTList(wt){
+  if(!wt)wt=wtActiveFilter;
+  wtActiveFilter=wt;
+  wtStatusFilter='all'; wtSearch='';
+  const wtLabels={'TAX AUDIT':'📑 Tax Audit','STAT AUDIT':'📂 Stat Audit','IT RETURN':'💼 IT Return','ROC':'🏛️ ROC Filing'};
+  const wtShort={'TAX AUDIT':'Tax Audit','STAT AUDIT':'Stat Audit','IT RETURN':'IT Return','ROC':'ROC Filing'};
+
+  // Top switcher row — 4 clickable summary cards
+  let h=`<div class="wt-switcher">`;
+  WT.forEach(w=>{
+    const clients=data.filter(d=>d.scope[w]);
+    const done=clients.filter(d=>d.status[w]==='Completed').length;
+    const ip=clients.filter(d=>d.status[w]==='In Progress').length;
+    const ns=clients.filter(d=>d.status[w]==='Not Started').length;
+    const pct=clients.length>0?Math.round(done/clients.length*100):0;
+    const isActive=w===wt;
+    h+=`<div class="wt-switch-btn${isActive?' active':''}" onclick="setView('wt','${w}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="wt-switch-title">${wtShort[w]}</div>
+        <div class="wt-switch-pct">${pct}%</div>
+      </div>
+      <div class="wt-switch-meta">
+        <span>${clients.length} clients</span>
+        <span style="color:#2E7D32">✓ ${done}</span>
+        <span style="color:#1565C0">▶ ${ip}</span>
+        <span style="color:#546E7A">○ ${ns}</span>
+      </div>
+      <div style="margin-top:5px;height:4px;background:#e0e7ef;border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:#81C784;border-radius:2px"></div>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Main full-width card for active work type
+  const clients=data.filter(d=>d.scope[wt]);
+  const counts={};STATUSES.forEach(s=>counts[s]=clients.filter(d=>d.status[wt]===s).length);
+
+  h+=`<div class="wt-main-card">
+    <div class="wt-main-hdr">
+      <div class="wt-main-title">${wtLabels[wt]}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">`;
+  STATUSES.forEach(s=>{
+    const [bg,fg]=SPILLS[s];
+    h+=`<span class="spill" style="background:${bg};color:${fg}">${s}: ${counts[s]||0}</span>`;
+  });
+  h+=`</div><div class="wt-main-cnt">${clients.length} clients total</div></div>
+
+    <div class="wt-list-tabs">
+      <div class="wt-tab active" id="wttab-all" onclick="filterWTList('all')">All <span class="wt-tab-cnt">${clients.length}</span></div>`;
+  STATUSES.forEach(s=>{
+    h+=`<div class="wt-tab" id="wttab-${s.replace(/ /g,'_')}" onclick="filterWTList('${s}')">${s} <span class="wt-tab-cnt">${counts[s]||0}</span></div>`;
+  });
+  h+=`</div>
+    <div class="wt-search-bar">
+      <input class="wt-srch" id="wt-search" placeholder="🔍 Search client…" oninput="wtSearch=this.value;refreshWTBody()">
+      <select class="fsel" id="wt-f-head" onchange="refreshWTBody()" style="height:30px">
+        <option value="">All Heads</option>
+        ${heads.map(hd=>`<option>${hd.name}</option>`).join('')}
+      </select>
+      <select class="fsel" id="wt-f-type" onchange="refreshWTBody()" style="height:30px">
+        <option value="">All Types</option>
+        <option>Company</option><option>Firm</option><option>Trust</option>
+      </select>
+      <span style="font-size:11px;color:var(--text2);margin-left:auto">Click head badge to reassign</span>
+    </div>
+    <div class="wt-list-body" id="wt-list-body">
+      ${buildWTRows(clients,wt,'all')}
+    </div>
+  </div>`;
+  document.getElementById('content').innerHTML=h;
+}
+
+function buildWTRows(clients,wt,statusFilter){
+  const fHead=document.getElementById('wt-f-head')?.value||'';
+  const fType=document.getElementById('wt-f-type')?.value||'';
+  const srch=(document.getElementById('wt-search')?.value||wtSearch).toLowerCase();
+  let rows=statusFilter==='all'?clients:clients.filter(d=>d.status[wt]===statusFilter);
+  if(fHead) rows=rows.filter(d=>d.head===fHead);
+  if(fType) rows=rows.filter(d=>d.type===fType);
+  if(srch)  rows=rows.filter(d=>d.name.toLowerCase().includes(srch));
+  if(!rows.length)return `<div class="empty-st"><div class="ico">🎉</div><p>No clients match.</p></div>`;
+
+  const headOpts=heads.map(hd=>`<option value="${hd.name}">${hd.name}</option>`).join('');
+  return `<table class="wt-table">
+    <thead><tr>
+      <th style="width:28px">#</th>
+      <th>Client Name</th>
+      <th>Head</th>
+      <th>Staff</th>
+      <th>Type</th>
+      <th>Status</th>
+      <th>Date Received</th>
+      <th>Payment</th>
+      <th>Remarks</th>
+    </tr></thead>
+    <tbody>`+
+  rows.map(d=>`<tr>
+    <td style="color:#bbb;font-size:9.5px;font-family:'DM Mono',monospace">${d.id}</td>
+    <td><div class="cname">${escH(d.name)}</div></td>
+    <td>
+      <select class="hbadge" style="background:${headColor(d.head)}22;color:${headColor(d.head)};border:1px solid ${headColor(d.head)}44;border-radius:9px;font-size:9px;font-weight:700;padding:2px 7px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;"
+        onchange="reassignHead(${d.id},this)" title="Click to reassign head">
+        <option value="">— Unassigned</option>
+        ${heads.map(hd=>`<option value="${hd.name}"${d.head===hd.name?' selected':''}>${hd.name}</option>`).join('')}
+      </select>
+    </td>
+    <td><input class="txt-inp" type="text" value="${escH(d.staff||'')}" placeholder="Staff…" onchange="updateField(${d.id},'staff',this.value)" style="min-width:75px"></td>
+    <td><span class="type-badge type-${d.type}">${d.type}</span></td>
+    <td><select class="ssel ${SCSS[d.status[wt]]}" onchange="updateStatusWT(${d.id},'${wt}',this)">
+      ${STATUSES.map(s=>`<option${d.status[wt]===s?' selected':''}>${s}</option>`).join('')}
+    </select></td>
+    <td><input class="date-inp" type="date" value="${d.dateReceived||''}" onchange="updateField(${d.id},'dateReceived',this.value)"></td>
+    <td><select class="pay-sel ${PCSS[d.payment]||'p0'}" onchange="updatePay(${d.id},this)">
+      <option${d.payment==='Pending'?' selected':''}>Pending</option>
+      <option${d.payment==='Partial'?' selected':''}>Partial</option>
+      <option${d.payment==='Received'?' selected':''}>Received</option>
+      <option${d.payment==='Written Off'?' selected':''}>Written Off</option>
+    </select></td>
+    <td><input class="txt-inp" type="text" value="${escH(d.remarks||'')}" placeholder="Notes…" onchange="updateField(${d.id},'remarks',this.value)" style="min-width:100px"></td>
+  </tr>`).join('')+
+  `</tbody></table>`;
+}
+
+function refreshWTBody(){
+  const clients=data.filter(d=>d.scope[wtActiveFilter]);
+  document.getElementById('wt-list-body').innerHTML=buildWTRows(clients,wtActiveFilter,wtStatusFilter);
+}
+
+function filterWTList(statusFilter){
+  wtStatusFilter=statusFilter;
+  document.querySelectorAll('.wt-tab').forEach(t=>t.classList.remove('active'));
+  const tabId='wttab-'+(statusFilter==='all'?'all':statusFilter.replace(/ /g,'_'));
+  document.getElementById(tabId)?.classList.add('active');
+  refreshWTBody();
+}
+
+function updateStatusWT(id,wt,sel){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  pushUndo(`Status: ${d.name} ${wt} → ${sel.value}`);
+  d.status[wt]=sel.value;sel.className=`ssel ${SCSS[sel.value]}`;
+  if(isFullyDone(d)){toast(`🎉 ${d.name} fully completed!`);setTimeout(()=>{updateCounts();renderWTList(wtActiveFilter);},900);}
+  updateCounts();saveData();
+}
+
+// ── TABLE VIEW ────────────────────────────────────────────────────────────────
+function getFiltered(){
+  const srch=document.getElementById('search')?.value.toLowerCase()||'';
+  const fH=document.getElementById('f-head')?.value||'';
+  const fT=document.getElementById('f-type')?.value||'';
+  const fS=document.getElementById('f-status')?.value||'';
+  const fW=document.getElementById('f-wt')?.value||'';
+  return data.filter(d=>{
+    if(isFullyDone(d))return false;
+    if(fH&&d.head!==fH)return false;
+    if(fT&&d.type!==fT)return false;
+    if(srch&&!d.name.toLowerCase().includes(srch))return false;
+    if(fS){const rel=fW?[fW]:WT.filter(wt=>d.scope[wt]);if(!rel.some(wt=>d.status[wt]===fS))return false;}
+    if(fW&&!d.scope[fW])return false;
+    return true;
+  });
+}
+
+function renderTable(){
+  const rows=getFiltered();
+  let h=`<div class="tbl-wrap">
+    <div class="tbl-infobar"><span class="tbl-count">${rows.length}</span>&nbsp;clients
+    <span style="color:#bbb;font-size:10.5px">&nbsp;·&nbsp; Completed → ✅ tab &nbsp;·&nbsp; Hover black cells to unlock</span></div>
+    <div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th style="width:28px">#</th><th>Client Name</th><th>Head</th><th>Staff</th><th>Type</th>
+      <th>Tax Audit</th><th>Stat Audit</th><th>IT Return</th><th>ROC</th>
+      <th>Date Recd</th><th>Inv No.</th><th>Payment</th><th>Remarks</th>
+      <th style="width:32px"></th>
+    </tr></thead><tbody>`;
+  if(!rows.length){
+    h+=`<tr><td colspan="14"><div class="empty-st"><div class="ico">🔍</div><p>No clients match filters.</p></div></td></tr>`;
+  } else {
+    rows.forEach(d=>{
+      h+=`<tr id="row-${d.id}">
+        <td style="color:#bbb;font-size:9.5px;font-family:'DM Mono',monospace">${d.id}</td>
+        <td><div class="cname">${escH(d.name)}</div></td>
+        <td>
+          <select class="hbadge" style="background:${headColor(d.head)}22;color:${headColor(d.head)};border:1px solid ${headColor(d.head)}44;border-radius:9px;font-size:9px;font-weight:700;padding:2px 7px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;"
+            onchange="reassignHead(${d.id},this)" title="Click to reassign head">
+            <option value="">— Unassigned</option>
+            ${heads.map(hd=>`<option value="${hd.name}"${d.head===hd.name?' selected':''}>${hd.name}</option>`).join('')}
+          </select>
+        </td>
+        <td><input class="txt-inp" type="text" value="${escH(d.staff||'')}" placeholder="Staff…" onchange="updateField(${d.id},'staff',this.value)" style="min-width:75px"></td>
+        <td><span class="type-badge type-${d.type}">${d.type}</span></td>`;
+      WT.forEach(wt=>{
+        if(d.scope[wt]){
+          h+=`<td><select class="ssel ${SCSS[d.status[wt]]}" onchange="updateStatus(${d.id},'${wt}',this)">`;
+          STATUSES.forEach(s=>h+=`<option${d.status[wt]===s?' selected':''}>${s}</option>`);
+          h+=`</select></td>`;
+        } else {
+          h+=`<td><div class="blocked-cell" title="Not in scope"><button class="unlock-btn" onclick="unlockScope(${d.id},'${wt}')">🔓</button></div></td>`;
+        }
+      });
+      h+=`<td><input class="date-inp" type="date" value="${d.dateReceived||''}" onchange="updateField(${d.id},'dateReceived',this.value)"></td>
+        <td><input class="txt-inp" type="text" value="${escH(d.invNo||'')}" placeholder="INV-" onchange="updateField(${d.id},'invNo',this.value)" style="min-width:60px"></td>
+        <td><select class="pay-sel ${PCSS[d.payment]||'p0'}" onchange="updatePay(${d.id},this)">
+          <option${d.payment==='Pending'?' selected':''}>Pending</option>
+          <option${d.payment==='Partial'?' selected':''}>Partial</option>
+          <option${d.payment==='Received'?' selected':''}>Received</option>
+          <option${d.payment==='Written Off'?' selected':''}>Written Off</option>
+        </select></td>
+        <td><input class="txt-inp" type="text" value="${escH(d.remarks||'')}" placeholder="Notes…" onchange="updateField(${d.id},'remarks',this.value)" style="min-width:100px"></td>
+        <td><button class="btn btn-danger" style="height:22px;width:26px;padding:0;font-size:11px" onclick="deleteClient(${d.id})" title="Delete">✕</button></td>
+      </tr>`;
+    });
+  }
+  h+=`</tbody></table></div></div>`;
+  document.getElementById('content').innerHTML=h;
+}
+
+// ── COMPLETED VIEW ────────────────────────────────────────────────────────────
+function renderCompleted(){
+  const done=data.filter(isFullyDone);
+  let h=`<div class="done-banner"><span style="font-size:20px">🎉</span>
+    <span><strong style="color:var(--green)">${done.length} clients</strong> fully completed.</span></div>
+  <div class="tbl-wrap"><div style="overflow-x:auto"><table>
+    <thead><tr><th>#</th><th>Client</th><th>Head</th><th>Staff</th><th>Type</th>
+    <th>Tax Audit</th><th>Stat Audit</th><th>IT Return</th><th>ROC</th>
+    <th>Completed On</th><th>Inv No.</th><th>Payment</th></tr></thead><tbody>`;
+  if(!done.length){h+=`<tr><td colspan="12"><div class="empty-st"><div class="ico">⏳</div><p>No clients fully completed yet.</p></div></td></tr>`;}
+  else done.forEach(d=>{
+    h+=`<tr class="row-done">
+      <td style="color:#bbb;font-size:9.5px;font-family:'DM Mono',monospace">${d.id}</td>
+      <td><div class="cname">${escH(d.name)}</div></td>
+      <td>
+        <select class="hbadge" style="background:${headColor(d.head)}22;color:${headColor(d.head)};border:1px solid ${headColor(d.head)}44;border-radius:9px;font-size:9px;font-weight:700;padding:2px 7px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;"
+          onchange="reassignHead(${d.id},this)" title="Reassign">
+          <option value="">— Unassigned</option>
+          ${heads.map(hd=>`<option value="${hd.name}"${d.head===hd.name?' selected':''}>${hd.name}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:11px;color:var(--text2)">${escH(d.staff||'—')}</td>
+      <td><span class="type-badge type-${d.type}">${d.type}</span></td>`;
+    WT.forEach(wt=>{
+      if(d.scope[wt])h+=`<td><span class="spill" style="background:#E8F5E9;color:#2E7D32">✓ Done</span></td>`;
+      else h+=`<td><div style="width:40px;height:18px;background:var(--blocked);border-radius:3px;display:inline-block"></div></td>`;
+    });
+    h+=`<td><input class="date-inp" type="date" value="${d.completedOn||''}" onchange="updateField(${d.id},'completedOn',this.value)"></td>
+      <td style="font-size:10.5px;font-family:'DM Mono',monospace">${escH(d.invNo||'—')}</td>
+      <td><span class="spill ${PCSS[d.payment]||'p0'}">${d.payment}</span></td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+  document.getElementById('content').innerHTML=h;
+}
+
+// ── REASSIGN HEAD ─────────────────────────────────────────────────────────────
+function reassignHead(id,sel){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  const oldHead=d.head;
+  const newHead=sel.value;
+  if(oldHead===newHead)return;
+  pushUndo(`Reassign ${d.name}: ${oldHead||'—'} → ${newHead||'—'}`);
+  d.head=newHead;
+  // Re-style the select to match new head colour
+  const c=headColor(newHead);
+  sel.style.background=c+'22';sel.style.color=c;sel.style.borderColor=c+'44';
+  updateCounts();saveData();
+  toast(`✅ ${d.name} → ${newHead||'Unassigned'}`);
+}
+function updateStatus(id,wt,sel){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  pushUndo(`Status: ${d.name} ${wt} → ${sel.value}`);
+  d.status[wt]=sel.value;sel.className=`ssel ${SCSS[sel.value]}`;
+  if(isFullyDone(d)){toast(`🎉 ${d.name} fully completed!`);setTimeout(()=>{updateCounts();renderTable();},900);}
+  updateCounts();saveData();
+}
+function updateField(id,field,value){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  d[field]=value;saveData();
+}
+function updatePay(id,sel){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  pushUndo(`Payment: ${d.name} → ${sel.value}`);
+  d.payment=sel.value;sel.className=`pay-sel ${PCSS[sel.value]}`;saveData();
+}
+function unlockScope(id,wt){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  if(!confirm(`Enable "${wt}" for ${d.name}?`))return;
+  pushUndo(`Unlock ${wt} for ${d.name}`);
+  d.scope[wt]=true;d.status[wt]='Not Started';
+  saveData();renderTable();toast(`🔓 ${wt} enabled for ${d.name}`);
+}
+function deleteClient(id){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  if(!confirm(`Delete "${d.name}"? This cannot be undone.`))return;
+  pushUndo(`Delete ${d.name}`);
+  data=data.filter(d=>d.id!==id);
+  updateCounts();saveData();renderTable();toast(`🗑 "${d.name}" deleted`);
+}
+
+// ── ADD CLIENT ────────────────────────────────────────────────────────────────
+function openAddClient(){
+  const hOpts=heads.map(h=>`<option>${h.name}</option>`).join('')+`<option value="">— Unassigned</option>`;
+  showModal(`<h3>➕ Add New Client</h3>
+    <div class="note">💡 Tick only the work types in scope. Black cells in table = not applicable (hover to unlock later).</div>
+    <div class="mgrid">
+      <div class="fg full"><label class="flbl">Client Name *</label>
+        <input class="finp" id="nc-name" placeholder="ABC ENTERPRISES" style="text-transform:uppercase"></div>
+      <div class="fg"><label class="flbl">Head</label><select class="finp" id="nc-head">${hOpts}</select></div>
+      <div class="fg"><label class="flbl">Type</label><select class="finp" id="nc-type"><option>Company</option><option>Firm</option><option>Trust</option></select></div>
+      <div class="fg full"><label class="flbl">Work Types in Scope</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:5px">
+          ${WT.map(wt=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="nc-${wt.replace(/ /g,'_')}" checked style="accent-color:var(--blue)"> ${wt}
+          </label>`).join('')}
+        </div></div>
+      <div class="fg"><label class="flbl">Date Received</label><input class="finp" type="date" id="nc-date"></div>
+      <div class="fg"><label class="flbl">Staff</label><input class="finp" id="nc-staff" placeholder="Name"></div>
+      <div class="fg"><label class="flbl">Invoice No.</label><input class="finp" id="nc-inv" placeholder="INV-001"></div>
+      <div class="fg"><label class="flbl">Payment</label><select class="finp" id="nc-pay"><option>Pending</option><option>Partial</option><option>Received</option><option>Written Off</option></select></div>
+      <div class="fg full"><label class="flbl">Remarks</label><input class="finp" id="nc-remarks" placeholder="Any notes…"></div>
+    </div>
+    <div class="mfooter"><button class="btn btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-pri" onclick="saveNewClient()">Add Client</button></div>`);
+}
+
+function saveNewClient(){
+  const name=document.getElementById('nc-name').value.trim().toUpperCase();
+  const head=document.getElementById('nc-head').value.trim().toUpperCase();
+  const type=document.getElementById('nc-type').value;
+  if(!name){toast('⚠️ Client name required');return;}
+  const scope={},status={};
+  WT.forEach(wt=>{
+    const cb=document.getElementById(`nc-${wt.replace(/ /g,'_')}`);
+    scope[wt]=cb?cb.checked:false;status[wt]=cb&&cb.checked?'Not Started':null;
+  });
+  pushUndo(`Add client ${name}`);
+  data.push({id:nextId++,head,type,name,scope,status,
+    dateReceived:document.getElementById('nc-date').value,completedOn:'',
+    staff:document.getElementById('nc-staff').value,
+    invNo:document.getElementById('nc-inv').value,
+    payment:document.getElementById('nc-pay').value,
+    remarks:document.getElementById('nc-remarks').value});
+  updateCounts();saveData();closeModal();toast(`✅ "${name}" added`);
+  if(['all','head','type'].includes(currentView))renderTable();
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const hdr=['ID','Head','Staff','Type','Client','Tax Audit','Stat Audit','IT Return','ROC','Date Received','Completed On','Inv No','Payment','Remarks'];
+  const rows=data.map(d=>[d.id,d.head,d.staff,d.type,`"${d.name}"`,
+    d.status['TAX AUDIT']||'N/A',d.status['STAT AUDIT']||'N/A',
+    d.status['IT RETURN']||'N/A',d.status['ROC']||'N/A',
+    d.dateReceived,d.completedOn,d.invNo,d.payment,`"${d.remarks||''}"`].join(','));
+  const csv=[hdr.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='GandhiArun_Tracker_FY2526.csv';a.click();toast('📥 CSV exported');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function showModal(html){
+  closeModal();
+  const ov=document.createElement('div');ov.className='mov';ov.id='modal-ov';
+  ov.onclick=e=>{if(e.target===ov)closeModal();};
+  const m=document.createElement('div');m.className='mod';m.innerHTML=html;
+  ov.appendChild(m);document.body.appendChild(ov);
+}
+function closeModal(){document.getElementById('modal-ov')?.remove();}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+init();
+</script>
+</body>
+</html>
