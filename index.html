@@ -161,6 +161,8 @@ td{padding:5px 9px;vertical-align:middle;}
 .pay-sel{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;border:none;border-radius:18px;padding:3px 7px;cursor:pointer;outline:none;appearance:none;}
 .p0{background:#FFEBEE;color:#C62828;}.p1{background:#FFF8E1;color:#F57F17;}
 .p2{background:#E8F5E9;color:#2E7D32;}.p3{background:#ECEFF1;color:#546E7A;}
+.draft-sel{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;border:none;border-radius:18px;padding:3px 7px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;}
+.d0{background:#FFEBEE;color:#C62828;}.d1{background:#FFF8E1;color:#F57F17;}.d2{background:#E8F5E9;color:#2E7D32;}
 .spill{display:inline-flex;align-items:center;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:14px;}
 
 /* ══ UNDO BAR ══ */
@@ -349,6 +351,7 @@ const WT=['TAX AUDIT','STAT AUDIT','IT RETURN','ROC'];
 const STATUSES=['Not Started','In Progress','Review Pending','Completed','On Hold'];
 const SCSS={'Not Started':'s0','In Progress':'s1','Review Pending':'s2','Completed':'s3','On Hold':'s4'};
 const PCSS={'Pending':'p0','Partial':'p1','Received':'p2','Written Off':'p3'};
+const DCSS={'Pending':'d0','To Check':'d1','Done':'d2'};
 const SEGS={'Not Started':'#ECEFF1','In Progress':'#90CAF9','Review Pending':'#FFE082','Completed':'#81C784','On Hold':'#FFAB91'};
 const SPILLS={'Not Started':['#ECEFF1','#546E7A'],'In Progress':['#E3F2FD','#1565C0'],'Review Pending':['#FFF8E1','#F57F17'],'Completed':['#E8F5E9','#2E7D32'],'On Hold':['#FBE9E7','#BF360C']};
 
@@ -710,6 +713,7 @@ function buildWTRows(clients,wt,statusFilter){
       <th>Staff</th>
       <th>Type</th>
       <th>Status</th>
+      <th>Drafting</th>
       <th>Date Received</th>
       <th>Payment</th>
       <th>Remarks</th>
@@ -729,6 +733,11 @@ function buildWTRows(clients,wt,statusFilter){
     <td><span class="type-badge type-${d.type}">${d.type}</span></td>
     <td><select class="ssel ${SCSS[d.status[wt]]}" onchange="updateStatusWT(${d.id},'${wt}',this)">
       ${STATUSES.map(s=>`<option${d.status[wt]===s?' selected':''}>${s}</option>`).join('')}
+    </select></td>
+    <td><select class="draft-sel ${DCSS[d.drafting]||'d0'}" onchange="updateDrafting(${d.id},this)">
+      <option${d.drafting==='Pending'?' selected':''}>Pending</option>
+      <option${d.drafting==='To Check'?' selected':''}>To Check</option>
+      <option${d.drafting==='Done'?' selected':''}>Done</option>
     </select></td>
     <td><input class="date-inp" type="date" value="${d.dateReceived||''}" onchange="updateField(${d.id},'dateReceived',this.value)"></td>
     <td><select class="pay-sel ${PCSS[d.payment]||'p0'}" onchange="updatePay(${d.id},this)">
@@ -790,11 +799,11 @@ function renderTable(){
     <thead><tr>
       <th style="width:28px">#</th><th>Client Name</th><th>Head</th><th>Staff</th><th>Type</th>
       <th>Tax Audit</th><th>Stat Audit</th><th>IT Return</th><th>ROC</th>
-      <th>Date Recd</th><th>Inv No.</th><th>Payment</th><th>Remarks</th>
+      <th>Drafting</th><th>Date Recd</th><th>Inv No.</th><th>Payment</th><th>Remarks</th>
       <th style="width:32px"></th>
     </tr></thead><tbody>`;
   if(!rows.length){
-    h+=`<tr><td colspan="14"><div class="empty-st"><div class="ico">🔍</div><p>No clients match filters.</p></div></td></tr>`;
+    h+=`<tr><td colspan="15"><div class="empty-st"><div class="ico">🔍</div><p>No clients match filters.</p></div></td></tr>`;
   } else {
     rows.forEach(d=>{
       h+=`<tr id="row-${d.id}">
@@ -818,6 +827,11 @@ function renderTable(){
           h+=`<td><div class="blocked-cell" title="Not in scope"><button class="unlock-btn" onclick="unlockScope(${d.id},'${wt}')">🔓</button></div></td>`;
         }
       });
+      h+=`<td><select class="draft-sel ${DCSS[d.drafting]||'d0'}" onchange="updateDrafting(${d.id},this)">
+          <option${d.drafting==='Pending'?' selected':''}>Pending</option>
+          <option${d.drafting==='To Check'?' selected':''}>To Check</option>
+          <option${d.drafting==='Done'?' selected':''}>Done</option>
+        </select></td>`;
       h+=`<td><input class="date-inp" type="date" value="${d.dateReceived||''}" onchange="updateField(${d.id},'dateReceived',this.value)"></td>
         <td><input class="txt-inp" type="text" value="${escH(d.invNo||'')}" placeholder="INV-" onchange="updateField(${d.id},'invNo',this.value)" style="min-width:60px"></td>
         <td><select class="pay-sel ${PCSS[d.payment]||'p0'}" onchange="updatePay(${d.id},this)">
@@ -843,8 +857,8 @@ function renderCompleted(){
   <div class="tbl-wrap"><div style="overflow-x:auto"><table>
     <thead><tr><th>#</th><th>Client</th><th>Head</th><th>Staff</th><th>Type</th>
     <th>Tax Audit</th><th>Stat Audit</th><th>IT Return</th><th>ROC</th>
-    <th>Completed On</th><th>Inv No.</th><th>Payment</th></tr></thead><tbody>`;
-  if(!done.length){h+=`<tr><td colspan="12"><div class="empty-st"><div class="ico">⏳</div><p>No clients fully completed yet.</p></div></td></tr>`;}
+    <th>Drafting</th><th>Completed On</th><th>Inv No.</th><th>Payment</th></tr></thead><tbody>`;
+  if(!done.length){h+=`<tr><td colspan="13"><div class="empty-st"><div class="ico">⏳</div><p>No clients fully completed yet.</p></div></td></tr>`;}
   else done.forEach(d=>{
     h+=`<tr class="row-done">
       <td style="color:#bbb;font-size:9.5px;font-family:'DM Mono',monospace">${d.id}</td>
@@ -862,6 +876,11 @@ function renderCompleted(){
       if(d.scope[wt])h+=`<td><span class="spill" style="background:#E8F5E9;color:#2E7D32">✓ Done</span></td>`;
       else h+=`<td><div style="width:40px;height:18px;background:var(--blocked);border-radius:3px;display:inline-block"></div></td>`;
     });
+    h+=`<td><select class="draft-sel ${DCSS[d.drafting]||'d0'}" onchange="updateDrafting(${d.id},this)">
+        <option${d.drafting==='Pending'?' selected':''}>Pending</option>
+        <option${d.drafting==='To Check'?' selected':''}>To Check</option>
+        <option${d.drafting==='Done'?' selected':''}>Done</option>
+      </select></td>`;
     h+=`<td><input class="date-inp" type="date" value="${d.completedOn||''}" onchange="updateField(${d.id},'completedOn',this.value)"></td>
       <td style="font-size:10.5px;font-family:'DM Mono',monospace">${escH(d.invNo||'—')}</td>
       <td><span class="spill ${PCSS[d.payment]||'p0'}">${d.payment}</span></td>
@@ -901,6 +920,11 @@ function updatePay(id,sel){
   pushUndo(`Payment: ${d.name} → ${sel.value}`);
   d.payment=sel.value;sel.className=`pay-sel ${PCSS[sel.value]}`;saveData();
 }
+function updateDrafting(id,sel){
+  const d=data.find(d=>d.id===id);if(!d)return;
+  pushUndo(`Drafting: ${d.name} → ${sel.value}`);
+  d.drafting=sel.value;sel.className=`draft-sel ${DCSS[sel.value]||'d0'}`;saveData();
+}
 function unlockScope(id,wt){
   const d=data.find(d=>d.id===id);if(!d)return;
   if(!confirm(`Enable "${wt}" for ${d.name}?`))return;
@@ -936,6 +960,7 @@ function openAddClient(){
       <div class="fg"><label class="flbl">Staff</label><input class="finp" id="nc-staff" placeholder="Name"></div>
       <div class="fg"><label class="flbl">Invoice No.</label><input class="finp" id="nc-inv" placeholder="INV-001"></div>
       <div class="fg"><label class="flbl">Payment</label><select class="finp" id="nc-pay"><option>Pending</option><option>Partial</option><option>Received</option><option>Written Off</option></select></div>
+      <div class="fg"><label class="flbl">Drafting</label><select class="finp" id="nc-draft"><option>Pending</option><option>To Check</option><option>Done</option></select></div>
       <div class="fg full"><label class="flbl">Remarks</label><input class="finp" id="nc-remarks" placeholder="Any notes…"></div>
     </div>
     <div class="mfooter"><button class="btn btn-sec" onclick="closeModal()">Cancel</button>
@@ -958,6 +983,7 @@ function saveNewClient(){
     staff:document.getElementById('nc-staff').value,
     invNo:document.getElementById('nc-inv').value,
     payment:document.getElementById('nc-pay').value,
+    drafting:document.getElementById('nc-draft').value,
     remarks:document.getElementById('nc-remarks').value});
   updateCounts();saveData();closeModal();toast(`✅ "${name}" added`);
   if(['all','head','type'].includes(currentView))renderTable();
@@ -965,11 +991,11 @@ function saveNewClient(){
 
 // ── EXPORT ────────────────────────────────────────────────────────────────────
 function exportCSV(){
-  const hdr=['ID','Head','Staff','Type','Client','Tax Audit','Stat Audit','IT Return','ROC','Date Received','Completed On','Inv No','Payment','Remarks'];
+  const hdr=['ID','Head','Staff','Type','Client','Tax Audit','Stat Audit','IT Return','ROC','Date Received','Completed On','Inv No','Payment','Drafting','Remarks'];
   const rows=data.map(d=>[d.id,d.head,d.staff,d.type,`"${d.name}"`,
     d.status['TAX AUDIT']||'N/A',d.status['STAT AUDIT']||'N/A',
     d.status['IT RETURN']||'N/A',d.status['ROC']||'N/A',
-    d.dateReceived,d.completedOn,d.invNo,d.payment,`"${d.remarks||''}"`].join(','));
+    d.dateReceived,d.completedOn,d.invNo,d.payment,d.drafting||'Pending',`"${d.remarks||''}"`].join(','));
   const csv=[hdr.join(','),...rows].join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
